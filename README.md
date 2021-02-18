@@ -1,4 +1,4 @@
-#The DragonBot - A Dungeons and Dragons Discord Bot
+# The DragonBot - A Dungeons and Dragons Discord Bot
 
 You need two files 
 ```
