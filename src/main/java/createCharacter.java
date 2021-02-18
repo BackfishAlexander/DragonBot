@@ -6,36 +6,50 @@ import java.util.Objects;
 
 public class createCharacter implements Runnable {
 
-    public static long id = 1;
     MessageChannel channel;
     User owner;
     private long timeToLive;
 
-    public createCharacter(User owner) {
+    public createCharacter(User owner, MessageChannel channel) {
         this.owner = owner;
-        this.timeToLive = System.nanoTime() + 30_000_000_000L;
+        this.channel = channel;
+        updateTime();
         Thread t = new Thread (this);
         t.start();
     }
 
+    private void updateTime() {
+        this.timeToLive = System.nanoTime() + 30_000_000_000L;
+    }
+
+    private MessageRequest sendMessageRequest() {
+        MessageRequest request = new MessageRequest();
+        request.targetUser = this.owner;
+        request.channel = this.channel;
+        commands.messageRequests.add(request);
+        return request;
+    }
+
     @Override
     public void run() {
+        //System.out.println("Started Thread");
         MessageRequest r = new MessageRequest();
-        long newID = this.id;
-        r.id = newID;
-        this.id += 1;
         r.targetUser = this.owner;
+        r.channel = this.channel;
         commands.messageRequests.add(r);
         while (timeToLive > System.nanoTime()) {
-            MessageRequest r2 = commands.isAnswered(newID);
-            if (Objects.nonNull(r2)) {
-                System.out.println(r2.message);
+            if (r.isAnswered) {
+                System.out.println("The user said \"" + r.message.getMessage().toString() + "\"");
                 break;
             }
-            //else {
-            //    System.out.println(r.message);
-            //}
+            try {
+                Thread.sleep(100);
+            }
+            catch (Exception e) {
+
+            }
         }
-        System.out.println("Ended thread...");
+        commands.messageRequests.remove(r);
+        //System.out.println("Ended thread.");
     }
 }

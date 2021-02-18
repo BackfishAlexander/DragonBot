@@ -31,33 +31,24 @@ public class commands implements EventListener {
         roller = new DiceRoller();
     }
 
-    public static MessageRequest isAnswered(long id) {
-        for (int i = 0; i < messageRequests.size(); i++) {
-            if (messageRequests.get(i).id == id && messageRequests.get(i).isAnswered == false) {
-                return messageRequests.get(i);
-            }
-        }
-        return null;
-    }
-
-    public void sendMessage(String msg, MessageChannel c)
+    public static void sendMessage(String msg, MessageChannel c)
     {
         c.sendMessage(msg).queue();
     }
 
-    public void sendMessage(MessageEmbed msg, MessageChannel c)
+    public static void sendMessage(MessageEmbed msg, MessageChannel c)
     {
         c.sendMessage(msg).queue();
     }
 
-    public void sendEmbeddedMessage(String msg, MessageChannel c, Color color)
+    public static void sendEmbeddedMessage(String msg, MessageChannel c, Color color)
     {
         EmbedBuilder rollInfo = new EmbedBuilder();
         rollInfo.setTitle(msg);
         rollInfo.setColor(color);
         c.sendMessage(rollInfo.build()).queue();
     }
-    public void sendEmbeddedTitleMessage(String title, String msg, MessageChannel c, Color color)
+    public static void sendEmbeddedTitleMessage(String title, String msg, MessageChannel c, Color color)
     {
         EmbedBuilder rollInfo = new EmbedBuilder();
         //rollInfo.setTitle(title);
@@ -94,16 +85,19 @@ public class commands implements EventListener {
     {
         if (event instanceof MessageReceivedEvent)
         {
-            String[] args = ((MessageReceivedEvent) event).getMessage().getContentRaw().split(" ");
-            MessageChannel channel = ((MessageReceivedEvent) event).getChannel();
+            MessageReceivedEvent mEvent = (MessageReceivedEvent) event;
+            String[] args = mEvent.getMessage().getContentRaw().split(" ");
+            MessageChannel channel = mEvent.getChannel();
             for (int i = 0; i < messageRequests.size(); i++) {
-                System.out.println("Checking request...");
-                if (messageRequests.get(i).targetUser.getAvatarId().equals(((MessageReceivedEvent) event).getAuthor().getAvatarId())) {
-                    System.out.println("User matches request");
-                    if (messageRequests.get(i).isAnswered == false) {
-                        System.out.println("Unanswered request... Answering...");
-                        messageRequests.get(i).message = ((MessageReceivedEvent) event).getMessage().getContentRaw();
-                        messageRequests.get(i).isAnswered = true;
+                //System.out.println("Checking request...");
+                if (messageRequests.get(i).targetUser.getAvatarId().equals(mEvent.getAuthor().getAvatarId())) {
+                    if (messageRequests.get(i).channel.getId().equals(mEvent.getChannel().getId())) {
+                        //System.out.println("User matches request");
+                        if (messageRequests.get(i).isAnswered == false) {
+                            //System.out.println("Unanswered request... Answering...");
+                            messageRequests.get(i).message = mEvent;
+                            messageRequests.get(i).isAnswered = true;
+                        }
                     }
                 }
             }
@@ -117,10 +111,10 @@ public class commands implements EventListener {
                 System.out.println(rolls.getRollResults().iterator().next());
 
                 EmbedBuilder rollInfo = new EmbedBuilder();
-                rollInfo.setTitle(((MessageReceivedEvent) event).getMember().getNickname() + " rolled a `" + rolls.getTotalRoll().toString() + "`");
+                rollInfo.setTitle(mEvent.getMember().getNickname() + " rolled a `" + rolls.getTotalRoll().toString() + "`");
                 //StringBuilder sRoles = new StringBuilder();
 
-                //rollInfo.addField(((MessageReceivedEvent) event).getAuthor().getName() + "Rolled", "", false);
+                //rollInfo.addField(mEvent.getAuthor().getName() + "Rolled", "", false);
                 rollInfo.setColor(Color.RED);
 
                 sendMessage(rollInfo.build(), channel);
@@ -136,19 +130,19 @@ public class commands implements EventListener {
                 //link = link.replaceAll("www.dndbeyond.com/", "");
                 //link = link.replaceAll("www.dndbeyond.com/profile/.*/characters/", "");
                 //System.out.println("`" + link + "`");
-                //DNDCharacter guy = new DNDCharacter(link, ((MessageReceivedEvent) event).getAuthor().getId());
+                //DNDCharacter guy = new DNDCharacter(link, mEvent.getAuthor().getId());
                 //guy.printCharacterSheet(channel);
-                //((MessageReceivedEvent) event).getMessage().delete().queue();
-                //Save.WriteObjectToFile(guy, "saves\\" + ((MessageReceivedEvent) event).getAuthor().getId() + ".save");
+                //mEvent.getMessage().delete().queue();
+                //Save.WriteObjectToFile(guy, "saves\\" + mEvent.getAuthor().getId() + ".save");
             //}
             if (args[0].equalsIgnoreCase(DragonBot.prefix + "create")) {
-                //((MessageReceivedEvent) event).getAuth
-                new createCharacter(((MessageReceivedEvent) event).getAuthor());
+                //mEvent.getAuth
+                new createCharacter(mEvent.getAuthor(), mEvent.getChannel());
             }
             if (args[0].equalsIgnoreCase(DragonBot.prefix + "sheet"))
             {
                 try {
-                    DNDCharacter guy = Save.ReadObjectFromFile("saves\\" + ((MessageReceivedEvent) event).getAuthor().getId() + ".save");
+                    DNDCharacter guy = Save.ReadObjectFromFile("saves\\" + mEvent.getAuthor().getId() + ".save");
                     guy.printCharacterSheet(channel);
                 }
                 catch (Exception e) {
@@ -163,26 +157,26 @@ public class commands implements EventListener {
                     advantage = false;
                 int r = d20(advantage);
                 try {
-                    DNDCharacter guy = Save.ReadObjectFromFile("saves\\" + ((MessageReceivedEvent) event).getAuthor().getId() + ".save");
+                    DNDCharacter guy = Save.ReadObjectFromFile("saves\\" + mEvent.getAuthor().getId() + ".save");
                     String stat = args[1].toLowerCase();
                     if (stat.equals("strength") || stat.equals("str")) {
-                        sendEmbeddedTitleMessage(((MessageReceivedEvent) event).getMember().getNickname() + "'s Strength Check",
+                        sendEmbeddedTitleMessage(mEvent.getMember().getNickname() + "'s Strength Check",
                                 "`" + Integer.toString(r) + "` + `" + Integer.toString(guy.strength) + "` = `" + Integer.toString(guy.strength + r) + "`", channel, Color.BLUE);
                     }
                     else if (stat.equals("dexterity") || stat.equals("dex"))
-                        sendEmbeddedTitleMessage(((MessageReceivedEvent) event).getMember().getNickname() + "'s Dexterity Check",
+                        sendEmbeddedTitleMessage(mEvent.getMember().getNickname() + "'s Dexterity Check",
                                 "`" + Integer.toString(r) + "` + `" + Integer.toString(guy.dexterity) + "` = `" + Integer.toString(guy.dexterity + r) + "`", channel, Color.BLUE);
                     else if (stat.equals("constitution") || stat.equals("con"))
-                        sendEmbeddedTitleMessage(((MessageReceivedEvent) event).getMember().getNickname() + "'s Constitution Check",
+                        sendEmbeddedTitleMessage(mEvent.getMember().getNickname() + "'s Constitution Check",
                                 "`" + Integer.toString(r) + "` + `" + Integer.toString(guy.constitution) + "` = `" + Integer.toString(guy.constitution + r) + "`", channel, Color.BLUE);
                     else if (stat.equals("intelligence") || stat.equals("int"))
-                        sendEmbeddedTitleMessage(((MessageReceivedEvent) event).getMember().getNickname() + "'s Intelligence Check",
+                        sendEmbeddedTitleMessage(mEvent.getMember().getNickname() + "'s Intelligence Check",
                                 "`" + Integer.toString(r) + "` + `" + Integer.toString(guy.intelligence) + "` = `" + Integer.toString(guy.intelligence + r) + "`", channel, Color.BLUE);
                     else if (stat.equals("wisdom") || stat.equals("wis"))
-                        sendEmbeddedTitleMessage(((MessageReceivedEvent) event).getMember().getNickname() + "'s Wisdom Check",
+                        sendEmbeddedTitleMessage(mEvent.getMember().getNickname() + "'s Wisdom Check",
                                 "`" + Integer.toString(r) + "` + `" + Integer.toString(guy.wisdom) + "` = `" + Integer.toString(guy.wisdom + r) + "`", channel, Color.BLUE);
                     else if (stat.equals("charisma") || stat.equals("char") || stat.equals("cha"))
-                        sendEmbeddedTitleMessage(((MessageReceivedEvent) event).getMember().getNickname() + "'s Charisma Check",
+                        sendEmbeddedTitleMessage(mEvent.getMember().getNickname() + "'s Charisma Check",
                                 "`" + Integer.toString(r) + "` + `" + Integer.toString(guy.charisma) + "` = `" + Integer.toString(guy.charisma + r) + "`", channel, Color.BLUE);
                     else
                         sendEmbeddedMessage("Error. Syntax: /check <skill> |advantage|", channel, Color.RED);
