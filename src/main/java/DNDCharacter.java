@@ -237,8 +237,8 @@ public class DNDCharacter implements Serializable {
                         "Charisma: `" + symbolString(charisma) + "`"), true);
         sheet.addField("__Stats__",
                 String.format("HP: `" + Integer.toString(HP) + "/" + Integer.toString(maxHP) + "`\n" +
-                        "Gold: `" + Integer.toString(GP) + "`\n" +
                         "AC: `" + Integer.toString(ac) + "`\n" +
+                        "Gold: `" + Integer.toString(GP) + "`\n" +
                         "Initiative: `" + symbolString(initiative) + "`"), true);
 /*
         sheet.addField("Strength:          `" + symbolString(strength) + "`", "", false);

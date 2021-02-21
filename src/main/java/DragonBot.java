@@ -8,7 +8,7 @@ import java.util.Scanner;
 
 public class DragonBot {
     public static JDA jda;
-    public static String prefix = "/";
+    public static char prefix = '/';
     public static void main(String[] args) throws Exception {
 
         File tokenFile = new File("token.txt");

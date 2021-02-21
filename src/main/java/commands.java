@@ -88,6 +88,8 @@ public class commands implements EventListener {
             MessageReceivedEvent mEvent = (MessageReceivedEvent) event;
             String[] args = mEvent.getMessage().getContentRaw().split(" ");
             MessageChannel channel = mEvent.getChannel();
+            boolean isCommand = false;
+
             for (int i = 0; i < messageRequests.size(); i++) {
                 //System.out.println("Checking request...");
                 if (messageRequests.get(i).targetUser.getAvatarId().equals(mEvent.getAuthor().getAvatarId())) {
@@ -102,10 +104,11 @@ public class commands implements EventListener {
                 }
             }
             if (args[0].equalsIgnoreCase(DragonBot.prefix + "help")) { //   Example: /help
+                isCommand = true;
                 sendMessage("Hey gamer!", channel);
             }
             if (args[0].equalsIgnoreCase(DragonBot.prefix + "roll")) { //   Example: /roll d20
-
+                isCommand = true;
                 //sendMessage("Rolling dice...", channel);
                 rolls = parser.parse(args[1], roller);
                 System.out.println(rolls.getRollResults().iterator().next());
@@ -136,11 +139,13 @@ public class commands implements EventListener {
                 //Save.WriteObjectToFile(guy, "saves\\" + mEvent.getAuthor().getId() + ".save");
             //}
             if (args[0].equalsIgnoreCase(DragonBot.prefix + "create")) {
+                isCommand = true;
                 //mEvent.getAuth
-                new createCharacter(mEvent.getAuthor(), mEvent.getChannel());
+                new createCharacter(mEvent.getAuthor(), mEvent.getChannel(), mEvent.getMember().getNickname()).deleteMe.add(mEvent.getMessageId());
             }
             if (args[0].equalsIgnoreCase(DragonBot.prefix + "sheet"))
             {
+                isCommand = true;
                 try {
                     DNDCharacter guy = Save.ReadObjectFromFile("saves\\" + mEvent.getAuthor().getId() + ".save");
                     guy.printCharacterSheet(channel);
@@ -150,6 +155,7 @@ public class commands implements EventListener {
                 }
             }
             if (args[0].equalsIgnoreCase(DragonBot.prefix + "check")) {
+                isCommand = true;
                 boolean advantage;
                 if ((args.length > 2) && (args[2].toLowerCase().equals("advantage") || args[2].toLowerCase().equals("adv")))
                     advantage = true;
@@ -184,6 +190,13 @@ public class commands implements EventListener {
                 catch (Exception e) {
                     sendEmbeddedMessage("Character not found. Try /beyond <dndbeyond link>", channel, Color.YELLOW);
                 }
+            }
+            try {
+                if (isCommand) {
+                    mEvent.getMessage().delete().queue();
+                }
+            } catch (Exception e) {
+
             }
         }
     }
