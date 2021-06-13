@@ -1,4 +1,6 @@
 # DragonBot DND Discord Bot
+The main goal of this project so far has been to learn how to implement the new libraries that I am becoming familiar with, so there are some sections of code that are placeholders and definitely don't exhibit great coding practice.
+
 ## Current Features
  - `Rolling Dice`
  - `Creating character sheets`
